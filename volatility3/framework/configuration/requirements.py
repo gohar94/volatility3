@@ -303,7 +303,8 @@ class TranslationLayerRequirement(interfaces.configuration.ConstructableRequirem
         args = {"context": context, "config_path": config_path, "name": name}
 
         if any(
-            [subreq.unsatisfied(context, config_path) for subreq in self.requirements.values() if not subreq.optional]):
+                [subreq.unsatisfied(context, config_path) for subreq in self.requirements.values() if
+                 not subreq.optional]):
             return None
 
         obj = self._construct_class(context, config_path, args)
@@ -358,7 +359,8 @@ class SymbolTableRequirement(interfaces.configuration.ConstructableRequirementIn
         args = {"context": context, "config_path": config_path, "name": name}
 
         if any(
-            [subreq.unsatisfied(context, config_path) for subreq in self.requirements.values() if not subreq.optional]):
+                [subreq.unsatisfied(context, config_path) for subreq in self.requirements.values() if
+                 not subreq.optional]):
             return None
 
         # Fill out the parameter for class creation
@@ -397,7 +399,7 @@ class VersionRequirement(interfaces.configuration.RequirementInterface):
         super().__init__(name = name, description = description, default = default, optional = optional)
         if component is None:
             raise TypeError("Component cannot be None")
-        self._component = component # type: Type[interfaces.configuration.VersionableInterface]
+        self._component = component  # type: Type[interfaces.configuration.VersionableInterface]
         if version is None:
             raise TypeError("Version cannot be None")
         self._version = version
@@ -429,3 +431,73 @@ class PluginRequirement(VersionRequirement):
                          optional = optional,
                          component = plugin,
                          version = version)
+
+
+class ModuleRequirement(interfaces.configuration.ConstructableRequirementInterface,
+                        interfaces.configuration.ConfigurableRequirementInterface):
+
+    def __init__(self, name: str,
+                 description: str = None,
+                 default: bool = False,
+                 optional: bool = False,
+                 layer_name = 'kernel_layer',
+                 architectures = None):
+        super().__init__(name = name, description = description, default = default, optional = optional)
+        if architectures is None:
+            architectures = ["Intel32", "Intel64"]
+        self.add_requirement(TranslationLayerRequirement(name = layer_name, architectures = architectures))
+        self.add_requirement(SymbolTableRequirement(name = 'symbol_table_name'))
+        self.add_requirement(IntRequirement(name = 'offset', default = 0))
+
+    def unsatisfied(self, context: 'interfaces.context.ContextInterface',
+                    config_path: str) -> Dict[str, interfaces.configuration.RequirementInterface]:
+        """Validate that the value is a valid module"""
+        config_path = interfaces.configuration.path_join(config_path, self.name)
+        value = self.config_value(context, config_path, None)
+        if isinstance(value, str):
+            if value not in context.modules:
+                vollog.log(constants.LOGLEVEL_V, "IndexError - Module not found in context: {}".format(value))
+                return {config_path: self}
+            return {}
+
+        if value is not None:
+            vollog.log(constants.LOGLEVEL_V,
+                       "TypeError - Module Requirement only accepts string labels: {}".format(repr(value)))
+            return {config_path: self}
+
+        ### NOTE: This validate method has side effects (the dependencies can change)!!!
+
+        self._validate_class(context, interfaces.configuration.parent_path(config_path))
+        vollog.log(constants.LOGLEVEL_V, "IndexError - No configuration provided: {}".format(config_path))
+        return {config_path: self}
+
+    def construct(self, context: interfaces.context.ContextInterface, config_path: str) -> None:
+        """Constructs the appropriate layer and adds it based on the class parameter."""
+        config_path = interfaces.configuration.path_join(config_path, self.name)
+
+        # Determine the layer name
+        name = self.name
+        counter = 2
+        while name in context.modules:
+            name = self.name + str(counter)
+            counter += 1
+
+        args = {"context": context, "config_path": config_path, "name": name}
+
+        if any(
+                [subreq.unsatisfied(context, config_path) for subreq in self.requirements.values() if
+                 not subreq.optional]):
+            return None
+
+        obj = self._construct_class(context, config_path, args)
+        if obj is not None and isinstance(obj, interfaces.context.Mod):
+            context.add_module(obj)
+            # This should already be done by the _construct_class method
+            # context.config[config_path] = obj.name
+        return None
+
+    def build_configuration(self, context: 'interfaces.context.ContextInterface', _: str,
+                            value: Any) -> interfaces.configuration.HierarchicalDict:
+        """Builds the appropriate configuration for the specified
+        requirement."""
+        return context.modules[value].build_configuration()
