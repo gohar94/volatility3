@@ -439,15 +439,19 @@ class ModuleRequirement(interfaces.configuration.ConstructableRequirementInterfa
     def __init__(self, name: str,
                  description: str = None,
                  default: bool = False,
-                 optional: bool = False,
-                 layer_name = 'kernel_layer',
-                 architectures = None):
+                 optional: bool = False):
         super().__init__(name = name, description = description, default = default, optional = optional)
-        if architectures is None:
-            architectures = ["Intel32", "Intel64"]
-        self.add_requirement(TranslationLayerRequirement(name = layer_name, architectures = architectures))
-        self.add_requirement(SymbolTableRequirement(name = 'symbol_table_name'))
-        self.add_requirement(IntRequirement(name = 'offset', default = 0))
+        for req in self.get_requirements():
+            self.add_requirement(req)
+
+    @classmethod
+    def get_requirements(cls) -> List[interfaces.configuration.RequirementInterface]:
+        return [
+            TranslationLayerRequirement(name = 'layer_name',
+                                        architectures = ["Intel32", "Intel64"]),
+            IntRequirement(name = 'offset'),
+            SymbolTableRequirement(name = 'symbol_table_name')
+        ]
 
     def unsatisfied(self, context: 'interfaces.context.ContextInterface',
                     config_path: str) -> Dict[str, interfaces.configuration.RequirementInterface]:
@@ -490,7 +494,7 @@ class ModuleRequirement(interfaces.configuration.ConstructableRequirementInterfa
             return None
 
         obj = self._construct_class(context, config_path, args)
-        if obj is not None and isinstance(obj, interfaces.context.Mod):
+        if obj is not None and isinstance(obj, interfaces.context.ModuleInterface):
             context.add_module(obj)
             # This should already be done by the _construct_class method
             # context.config[config_path] = obj.name
