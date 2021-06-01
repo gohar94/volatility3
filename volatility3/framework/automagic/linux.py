@@ -83,7 +83,7 @@ class LinuxIntelStacker(interfaces.automagic.StackerLayerInterface):
                 layer.config['kernel_virtual_offset'] = aslr_shift
 
             if layer and dtb:
-                vollog.debug("DTB was found at: 0x{:0x}".format(dtb))
+                vollog.debug(f"DTB was found at: 0x{dtb:0x}")
                 return layer
         vollog.debug("No suitable linux banner could be matched")
         return None

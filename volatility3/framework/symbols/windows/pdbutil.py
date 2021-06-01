@@ -84,13 +84,13 @@ class PDBUtility(interfaces.configuration.VersionableInterface):
                 break
 
         if not isf_path:
-            vollog.debug("Required symbol library path not found: {}".format(filter_string))
+            vollog.debug(f"Required symbol library path not found: {filter_string}")
             vollog.info("The symbols can be downloaded later using pdbconv.py -p {} -g {}".format(
                 pdb_name.strip('\x00'),
                 guid.upper() + str(age)))
             return None
 
-        vollog.debug("Using symbol library: {}".format(filter_string))
+        vollog.debug(f"Using symbol library: {filter_string}")
 
         # Set the discovered options
         join = interfaces.configuration.path_join
@@ -224,7 +224,7 @@ class PDBUtility(interfaces.configuration.VersionableInterface):
                     try:
                         os.remove(filename)
                     except PermissionError:
-                        vollog.warning("Temporary file could not be removed: {}".format(filename))
+                        vollog.warning(f"Temporary file could not be removed: {filename}")
         else:
             vollog.warning("Cannot write downloaded symbols, please add the appropriate symbols"
                            " or add/modify a symbols directory that is writable")
@@ -313,7 +313,7 @@ class PDBUtility(interfaces.configuration.VersionableInterface):
 
         guid = guids[0]
 
-        vollog.debug("Found {}: {}-{}".format(guid["pdb_name"], guid["GUID"], guid["age"]))
+        vollog.debug(f"Found {guid['pdb_name']}: {guid['GUID']}-{guid['age']}")
 
         return cls.load_windows_symbol_table(context,
                                              guid["GUID"],

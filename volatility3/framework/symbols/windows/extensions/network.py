@@ -164,7 +164,7 @@ class _TCP_LISTENER(objects.StructType):
                 return False
 
         except exceptions.InvalidAddressException:
-            vollog.debug("netw obj 0x{:x} invalid due to invalid address access".format(self.vol.offset))
+            vollog.debug(f"netw obj 0x{self.vol.offset:x} invalid due to invalid address access")
             return False
         return True
 

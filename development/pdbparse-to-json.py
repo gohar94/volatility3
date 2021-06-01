@@ -27,7 +27,7 @@ class PDBRetreiver:
         logger.info("Download PDB file...")
         file_name = ".".join(file_name.split(".")[:-1] + ['pdb'])
         for sym_url in ['http://msdl.microsoft.com/download/symbols']:
-            url = sym_url + "/{}/{}/".format(file_name, guid)
+            url = sym_url + f"/{file_name}/{guid}/"
 
             result = None
             for suffix in [file_name[:-1] + '_', file_name]:

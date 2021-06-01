@@ -7,6 +7,7 @@ import gettext
 import re
 from typing import List, Optional, Sequence, Any, Union
 
+
 # This effectively overrides/monkeypatches the core argparse module to provide more helpful output around choices
 # We shouldn't really steal a private member from argparse, but otherwise we're just duplicating code
 
@@ -21,7 +22,7 @@ class HelpfulSubparserAction(argparse._SubParsersAction):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         # We don't want the action self-check to kick in, so we remove the choices list, the check happens in __call__
-        self.choices = None
+        self.choices = None # type: ignore
 
     def __call__(self,
                  parser: argparse.ArgumentParser,
@@ -30,7 +31,7 @@ class HelpfulSubparserAction(argparse._SubParsersAction):
                  option_string: Optional[str] = None) -> None:
 
         parser_name = ''
-        arg_strings: List[str] = []
+        arg_strings = []  # type: List[str]
         if values is not None:
             for value in values:
                 if not parser_name:
@@ -45,10 +46,10 @@ class HelpfulSubparserAction(argparse._SubParsersAction):
         matched_parsers = [name for name in self._name_parser_map if parser_name in name]
 
         if len(matched_parsers) < 1:
-            msg = 'invalid choice {} (choose from {})'.format(parser_name, ', '.join(self._name_parser_map))
+            msg = f"invalid choice {parser_name} (choose from {', '.join(self._name_parser_map)})"
             raise argparse.ArgumentError(self, msg)
         if len(matched_parsers) > 1:
-            msg = 'plugin {} matches multiple plugins ({})'.format(parser_name, ', '.join(matched_parsers))
+            msg = f"plugin {parser_name} matches multiple plugins ({', '.join(matched_parsers)})"
             raise argparse.ArgumentError(self, msg)
         parser = self._name_parser_map[matched_parsers[0]]
         setattr(namespace, 'plugin', matched_parsers[0])
@@ -87,7 +88,7 @@ class HelpfulArgParser(argparse.ArgumentParser):
             if msg is None:
                 msg = gettext.ngettext('expected %s argument', 'expected %s arguments', action.nargs) % action.nargs
             if action.choices:
-                msg = "{} (from: {})".format(msg, ", ".join(action.choices))
+                msg = f"{msg} (from: {', '.join(action.choices)})"
             raise argparse.ArgumentError(action, msg)
 
         # return the number of arguments matched

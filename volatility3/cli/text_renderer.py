@@ -39,7 +39,7 @@ def hex_bytes_as_text(value: bytes) -> str:
     count = 0
     output = ""
     for byte in value:
-        hex.append("{:02x}".format(byte))
+        hex.append(f"{byte:02x}")
         ascii.append(chr(byte) if 0x20 < byte <= 0x7E else ".")
         if (count % 8) == 7:
             output += "\n"
@@ -66,7 +66,6 @@ def multitypedata_as_text(value: format_hints.MultiTypeData) -> str:
 
 
 def optional(func: Callable) -> Callable:
-
     @wraps(func)
     def wrapped(x: Any) -> str:
         if isinstance(x, interfaces.renderers.BaseAbsentValue):
@@ -80,17 +79,16 @@ def optional(func: Callable) -> Callable:
 
 
 def quoted_optional(func: Callable) -> Callable:
-
     @wraps(func)
     def wrapped(x: Any) -> str:
         result = optional(func)(x)
         if result == "-" or result == "N/A":
             return ""
         if isinstance(x, format_hints.MultiTypeData) and x.converted_int:
-            return "{}".format(result)
+            return f"{result}"
         if isinstance(x, int) and not isinstance(x, (format_hints.Hex, format_hints.Bin)):
-            return "{}".format(result)
-        return "\"{}\"".format(result)
+            return f"{result}"
+        return f"\"{result}\""
 
     return wrapped
 
@@ -115,7 +113,7 @@ def display_disassembly(disasm: interfaces.renderers.Disassembly) -> str:
         output = ""
         if disasm.architecture is not None:
             for i in disasm_types[disasm.architecture].disasm(disasm.data, disasm.offset):
-                output += "\n0x%x:\t%s\t%s" % (i.address, i.mnemonic, i.op_str)
+                output += f"\n0x{i.address:x}:\t{i.mnemonic}\t{i.op_str}"
         return output
     return QuickTextRenderer._type_renderers[bytes](disasm.data)
 
@@ -128,14 +126,14 @@ class CLIRenderer(interfaces.renderers.Renderer):
 
 class QuickTextRenderer(CLIRenderer):
     _type_renderers = {
-        format_hints.Bin: optional(lambda x: "0b{:b}".format(x)),
-        format_hints.Hex: optional(lambda x: "0x{:x}".format(x)),
+        format_hints.Bin: optional(lambda x: f"0b{x:b}"),
+        format_hints.Hex: optional(lambda x: f"0x{x:x}"),
         format_hints.HexBytes: optional(hex_bytes_as_text),
         format_hints.MultiTypeData: quoted_optional(multitypedata_as_text),
         interfaces.renderers.Disassembly: optional(display_disassembly),
-        bytes: optional(lambda x: " ".join(["{0:02x}".format(b) for b in x])),
+        bytes: optional(lambda x: " ".join([f"{b:02x}" for b in x])),
         datetime.datetime: optional(lambda x: x.strftime("%Y-%m-%d %H:%M:%S.%f %Z")),
-        'default': optional(lambda x: "{}".format(x))
+        'default': optional(lambda x: f"{x}")
     }
 
     name = "quick"
@@ -158,7 +156,7 @@ class QuickTextRenderer(CLIRenderer):
         line = []
         for column in grid.columns:
             # Ignore the type because namedtuples don't realize they have accessible attributes
-            line.append("{}".format(column.name))
+            line.append(f"{column.name}")
         outfd.write("\n{}\n".format("\t".join(line)))
 
         def visitor(node: interfaces.renderers.TreeNode, accumulator):
@@ -184,14 +182,14 @@ class QuickTextRenderer(CLIRenderer):
 
 class CSVRenderer(CLIRenderer):
     _type_renderers = {
-        format_hints.Bin: quoted_optional(lambda x: "0b{:b}".format(x)),
-        format_hints.Hex: quoted_optional(lambda x: "0x{:x}".format(x)),
+        format_hints.Bin: quoted_optional(lambda x: f"0b{x:b}"),
+        format_hints.Hex: quoted_optional(lambda x: f"0x{x:x}"),
         format_hints.HexBytes: quoted_optional(hex_bytes_as_text),
         format_hints.MultiTypeData: quoted_optional(multitypedata_as_text),
         interfaces.renderers.Disassembly: quoted_optional(display_disassembly),
-        bytes: quoted_optional(lambda x: " ".join(["{0:02x}".format(b) for b in x])),
+        bytes: quoted_optional(lambda x: " ".join([f"{b:02x}" for b in x])),
         datetime.datetime: quoted_optional(lambda x: x.strftime("%Y-%m-%d %H:%M:%S.%f %Z")),
-        'default': quoted_optional(lambda x: "{}".format(x))
+        'default': quoted_optional(lambda x: f"{x}")
     }
 
     name = "csv"
@@ -212,7 +210,7 @@ class CSVRenderer(CLIRenderer):
         for column in grid.columns:
             # Ignore the type because namedtuples don't realize they have accessible attributes
             line.append("{}".format('"' + column.name + '"'))
-        outfd.write("{}".format(",".join(line)))
+        outfd.write(f"{','.join(line)}")
 
         def visitor(node: interfaces.renderers.TreeNode, accumulator):
             accumulator.write("\n")
@@ -223,7 +221,7 @@ class CSVRenderer(CLIRenderer):
                 column = grid.columns[column_index]
                 renderer = self._type_renderers.get(column.type, self._type_renderers['default'])
                 line.append(renderer(node.values[column_index]))
-            accumulator.write("{}".format(",".join(line)))
+            accumulator.write(f"{','.join(line)}")
             return accumulator
 
         if not grid.populated:
@@ -263,7 +261,8 @@ class PrettyTextRenderer(CLIRenderer):
         max_column_widths = dict([(column.name, len(column.name)) for column in grid.columns])
 
         def visitor(
-            node: interfaces.renderers.TreeNode, accumulator: List[Tuple[int, Dict[interfaces.renderers.Column, bytes]]]
+                node: interfaces.renderers.TreeNode,
+                accumulator: List[Tuple[int, Dict[interfaces.renderers.Column, bytes]]]
         ) -> List[Tuple[int, Dict[interfaces.renderers.Column, bytes]]]:
             # Nodes always have a path value, giving them a path_depth of at least 1, we use max just in case
             max_column_widths[tree_indent_column] = max(max_column_widths.get(tree_indent_column, 0), node.path_depth)
@@ -273,7 +272,7 @@ class PrettyTextRenderer(CLIRenderer):
                 renderer = self._type_renderers.get(column.type, self._type_renderers['default'])
                 data = renderer(node.values[column_index])
                 max_column_widths[column.name] = max(max_column_widths.get(column.name, len(column.name)),
-                                                     len("{}".format(data)))
+                                                     len(f"{data}"))
                 line[column] = data
             accumulator.append((node.path_depth, line))
             return accumulator
@@ -304,7 +303,7 @@ class JsonRenderer(CLIRenderer):
         format_hints.HexBytes: quoted_optional(hex_bytes_as_text),
         interfaces.renderers.Disassembly: quoted_optional(display_disassembly),
         format_hints.MultiTypeData: quoted_optional(multitypedata_as_text),
-        bytes: optional(lambda x: " ".join(["{0:02x}".format(b) for b in x])),
+        bytes: optional(lambda x: " ".join([f"{b:02x}" for b in x])),
         datetime.datetime: lambda x: x.isoformat() if not isinstance(x, interfaces.renderers.BaseAbsentValue) else None,
         'default': lambda x: x
     }
@@ -327,7 +326,7 @@ class JsonRenderer(CLIRenderer):
             {}, [])  # type: Tuple[Dict[str, List[interfaces.renderers.TreeNode]], List[interfaces.renderers.TreeNode]]
 
         def visitor(
-            node: interfaces.renderers.TreeNode, accumulator: Tuple[Dict[str, Dict[str, Any]], List[Dict[str, Any]]]
+                node: interfaces.renderers.TreeNode, accumulator: Tuple[Dict[str, Dict[str, Any]], List[Dict[str, Any]]]
         ) -> Tuple[Dict[str, Dict[str, Any]], List[Dict[str, Any]]]:
             # Nodes always have a path value, giving them a path_depth of at least 1, we use max just in case
             acc_map, final_tree = accumulator

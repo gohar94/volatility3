@@ -172,7 +172,7 @@ class VmwareStacker(interfaces.automagic.StackerLayerInterface):
                     pass
 
             vollog.log(constants.LOGLEVEL_VVVV,
-                       "Metadata found: VMSS ({}) or VMSN ({})".format(vmss_success, vmsn_success))
+                       f"Metadata found: VMSS ({vmss_success}) or VMSN ({vmsn_success})")
 
             if not vmss_success and not vmsn_success:
                 return None

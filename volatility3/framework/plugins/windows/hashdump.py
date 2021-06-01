@@ -72,7 +72,7 @@ class Hashdump(interfaces.plugins.PluginInterface):
     @classmethod
     def get_bootkey(cls, syshive: registry.RegistryHive) -> Optional[bytes]:
         cs = 1
-        lsa_base = "ControlSet{0:03}".format(cs) + "\\Control\\Lsa"
+        lsa_base = f"ControlSet{cs:03}" + "\\Control\\Lsa"
         lsa_keys = ["JD", "Skew1", "GBG", "Data"]
 
         lsa = syshive.get_key(lsa_base)

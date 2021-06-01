@@ -143,7 +143,7 @@ class PoolScanner(plugins.PluginInterface):
                 try:
                     name = mem_object.FileName.String
                 except exceptions.InvalidAddressException:
-                    vollog.log(constants.LOGLEVEL_VVV, "Skipping file at {0:#x}".format(mem_object.vol.offset))
+                    vollog.log(constants.LOGLEVEL_VVV, f"Skipping file at {mem_object.vol.offset:#x}")
                     continue
             else:
                 name = renderers.NotApplicableValue()
@@ -300,7 +300,7 @@ class PoolScanner(plugins.PluginInterface):
                                            kernel_symbol_table = symbol_table)
 
             if mem_object is None:
-                vollog.log(constants.LOGLEVEL_VVV, "Cannot create an instance of {}".format(constraint.type_name))
+                vollog.log(constants.LOGLEVEL_VVV, f"Cannot create an instance of {constraint.type_name}")
                 continue
 
             if constraint.object_type is not None and not constraint.skip_type_test:
@@ -309,7 +309,7 @@ class PoolScanner(plugins.PluginInterface):
                         continue
                 except exceptions.InvalidAddressException:
                     vollog.log(constants.LOGLEVEL_VVV,
-                               "Cannot test instance type check for {}".format(constraint.type_name))
+                               f"Cannot test instance type check for {constraint.type_name}")
                     continue
 
             yield constraint, mem_object, header

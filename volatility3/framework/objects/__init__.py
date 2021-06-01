@@ -40,7 +40,7 @@ def convert_value_to_data(value: TUnion[int, float, bytes, str, bool], struct_ty
                           data_format: DataFormatInfo) -> bytes:
     """Converts a particular value to a series of bytes."""
     if not isinstance(value, struct_type):
-        raise TypeError("Written value is not of the correct type for {}".format(struct_type.__name__))
+        raise TypeError(f"Written value is not of the correct type for {struct_type.__name__}")
 
     if struct_type == int and isinstance(value, int):
         # Doubling up on the isinstance is for mypy
@@ -457,7 +457,7 @@ class Enumeration(interfaces.objects.ObjectInterface, int):
                 # Technically this shouldn't be a problem, but since we inverse cache
                 # and can't map one value to two possibilities we throw an exception during build
                 # We can remove/work around this if it proves a common issue
-                raise ValueError("Enumeration value {} duplicated as {} and {}".format(v, k, inverse_choices[v]))
+                raise ValueError(f"Enumeration value {v} duplicated as {k} and {inverse_choices[v]}")
             inverse_choices[v] = k
         return inverse_choices
 
@@ -487,7 +487,7 @@ class Enumeration(interfaces.objects.ObjectInterface, int):
         """Returns the value for a specific name."""
         if attr in self._vol['choices']:
             return self._vol['choices'][attr]
-        raise AttributeError("Unknown attribute {} for Enumeration {}".format(attr, self._vol['type_name']))
+        raise AttributeError(f"Unknown attribute {attr} for Enumeration {self._vol['type_name']}")
 
     def write(self, value: bytes):
         raise NotImplementedError("Writing to Enumerations is not yet implemented")
@@ -587,7 +587,7 @@ class Array(interfaces.objects.ObjectInterface, collections.abc.Sequence):
             the child member."""
             if 'subtype' in template.vol and child == 'subtype':
                 return 0
-            raise IndexError("Member not present in array template: {}".format(child))
+            raise IndexError(f"Member not present in array template: {child}")
 
     @overload
     def __getitem__(self, i: int) -> interfaces.objects.Template:
@@ -658,9 +658,9 @@ class AggregateType(interfaces.objects.ObjectInterface):
         """Describes the object appropriately"""
         extras = member_name = ''
         if self.vol.native_layer_name != self.vol.layer_name:
-            extras += " (Native: {})".format(self.vol.native_layer_name)
+            extras += f" (Native: {self.vol.native_layer_name})"
         if self.vol.member_name:
-            member_name = " (.{})".format(self.vol.member_name)
+            member_name = f" (.{self.vol.member_name})"
         return "<{} {}{}: {} @ 0x{:x} #{}{}>".format(self.__class__.__name__, self.vol.type_name, member_name,
                                                      self.vol.layer_name, self.vol.offset, self.vol.size, extras)
 
@@ -700,7 +700,7 @@ class AggregateType(interfaces.objects.ObjectInterface):
             """Returns the relative offset of a child to its parent."""
             retlist = template.vol.members.get(child, None)
             if retlist is None:
-                raise IndexError("Member not present in template: {}".format(child))
+                raise IndexError(f"Member not present in template: {child}")
             return retlist[0]
 
         @classmethod
@@ -723,7 +723,7 @@ class AggregateType(interfaces.objects.ObjectInterface):
         assert isinstance(members, collections.abc.Mapping)
         "{} members parameter must be a mapping: {}".format(agg_name, type(members))
         assert all([(isinstance(member, tuple) and len(member) == 2) for member in members.values()])
-        "{} members must be a tuple of relative_offsets and templates".format(agg_name)
+        f"{agg_name} members must be a tuple of relative_offsets and templates"
 
     def member(self, attr: str = 'member') -> object:
         """Specifically named method for retrieving members."""
@@ -754,7 +754,7 @@ class AggregateType(interfaces.objects.ObjectInterface):
         for agg_type in AggregateTypes:
             if isinstance(self, agg_type):
                 agg_name = agg_type.__name__
-        raise AttributeError("{} has no attribute: {}.{}".format(agg_name, self.vol.type_name, attr))
+        raise AttributeError(f"{agg_name} has no attribute: {self.vol.type_name}.{attr}")
 
     # Disable messing around with setattr until the consequences have been considered properly
     # For example pdbutil constructs objects and then sets values for them
@@ -778,7 +778,7 @@ class AggregateType(interfaces.objects.ObjectInterface):
             if isinstance(self, agg_type):
                 agg_name = agg_type.__name__
         raise TypeError(
-            "{}s cannot be written to directly, individual members must be written instead".format(agg_name))
+            f"{agg_name}s cannot be written to directly, individual members must be written instead")
 
 
 class StructType(AggregateType):
