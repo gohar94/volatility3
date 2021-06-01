@@ -314,7 +314,7 @@ class ModuleCollection(interfaces.context.ModuleContainer):
         included in the deduplicated version
         """
         new_modules = []
-        seen = set()  # type: Set[str]
+        seen: Set[str] = set()
         for mod in self._modules:
             if mod.hash not in seen or mod.size == 0:
                 new_modules.append(mod)
@@ -343,10 +343,7 @@ class ModuleCollection(interfaces.context.ModuleContainer):
 
 class ConfigurableModule(Module, interfaces.configuration.ConfigurableInterface):
 
-    def __init__(self,
-                 context: interfaces.context.ContextInterface,
-                 config_path: str,
-                 name: str) -> None:
+    def __init__(self, context: interfaces.context.ContextInterface, config_path: str, name: str) -> None:
         interfaces.configuration.ConfigurableInterface.__init__(self, context, config_path)
         layer_name = self.config['layer_name']
         offset = self.config['offset']

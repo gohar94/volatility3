@@ -94,7 +94,7 @@ class Function(interfaces.objects.ObjectInterface):
 class PrimitiveObject(interfaces.objects.ObjectInterface):
     """PrimitiveObject is an interface for any objects that should simulate a
     Python primitive."""
-    _struct_type = int  # type: ClassVar[Type]
+    _struct_type: ClassVar[Type] = int
 
     def __init__(self, context: interfaces.context.ContextInterface, type_name: str,
                  object_info: interfaces.objects.ObjectInformation, data_format: DataFormatInfo) -> None:
@@ -124,7 +124,7 @@ class PrimitiveObject(interfaces.objects.ObjectInterface):
         result = cls._struct_type.__new__(cls, value)
         # This prevents us having to go read a context layer when recreating after unpickling
         # Mypy complains that result doesn't have a __new_value, but using setattr causes pycharm to complain further down
-        result.__new_value = value  # type: ignore
+        result.__new_value = value
         return result
 
     def __getnewargs_ex__(self):
@@ -163,7 +163,7 @@ class PrimitiveObject(interfaces.objects.ObjectInterface):
 # https://mail.python.org/pipermail/python-dev/2004-February/042537.html
 class Boolean(PrimitiveObject, int):
     """Primitive Object that handles boolean types."""
-    _struct_type = int  # type: ClassVar[Type]
+    _struct_type: ClassVar[Type] = int
 
 
 class Integer(PrimitiveObject, int):
@@ -172,17 +172,17 @@ class Integer(PrimitiveObject, int):
 
 class Float(PrimitiveObject, float):
     """Primitive Object that handles double or floating point numbers."""
-    _struct_type = float  # type: ClassVar[Type]
+    _struct_type: ClassVar[Type] = float
 
 
 class Char(PrimitiveObject, int):
     """Primitive Object that handles characters."""
-    _struct_type = int  # type: ClassVar[Type]
+    _struct_type: ClassVar[Type] = int
 
 
 class Bytes(PrimitiveObject, bytes):
     """Primitive Object that handles specific series of bytes."""
-    _struct_type = bytes  # type: ClassVar[Type]
+    _struct_type: ClassVar[Type] = bytes
 
     def __init__(self,
                  context: interfaces.context.ContextInterface,
@@ -226,7 +226,7 @@ class String(PrimitiveObject, str):
         max_length: specifies the maximum possible length that the string could hold within memory
             (for multibyte characters, this will not be the maximum length of the string)
     """
-    _struct_type = str  # type: ClassVar[Type]
+    _struct_type: ClassVar[Type] = str
 
     def __init__(self,
                  context: interfaces.context.ContextInterface,
@@ -451,7 +451,7 @@ class Enumeration(interfaces.objects.ObjectInterface, int):
     @classmethod
     def _generate_inverse_choices(cls, choices: Dict[str, int]) -> Dict[int, str]:
         """Generates the inverse choices for the object."""
-        inverse_choices = {}  # type: Dict[int, str]
+        inverse_choices: Dict[int, str] = {}
         for k, v in choices.items():
             if v in inverse_choices:
                 # Technically this shouldn't be a problem, but since we inverse cache
@@ -599,7 +599,7 @@ class Array(interfaces.objects.ObjectInterface, collections.abc.Sequence):
 
     def __getitem__(self, i):
         """Returns the i-th item from the array."""
-        result = []  # type: List[interfaces.objects.Template]
+        result: List[interfaces.objects.Template] = []
         mask = self._context.layers[self.vol.layer_name].address_mask
         # We use the range function to deal with slices for us
         series = range(self.vol.count)[i]
@@ -647,7 +647,7 @@ class AggregateType(interfaces.objects.ObjectInterface):
                          size = size,
                          members = members)
         # self._check_members(members)
-        self._concrete_members = {}  # type: Dict[str, Dict]
+        self._concrete_members: Dict[str, Dict] = {}
 
     def has_member(self, member_name: str) -> bool:
         """Returns whether the object would contain a member called
@@ -661,7 +661,8 @@ class AggregateType(interfaces.objects.ObjectInterface):
             extras += " (Native: {})".format(self.vol.native_layer_name)
         if self.vol.member_name:
             member_name = " (.{})".format(self.vol.member_name)
-        return "<{} {}{}: {} @ 0x{:x} #{}{}>".format(self.__class__.__name__, self.vol.type_name, member_name, self.vol.layer_name, self.vol.offset, self.vol.size, extras)
+        return "<{} {}{}: {} @ 0x{:x} #{}{}>".format(self.__class__.__name__, self.vol.type_name, member_name,
+                                                     self.vol.layer_name, self.vol.offset, self.vol.size, extras)
 
     class VolTemplateProxy(interfaces.objects.ObjectInterface.VolTemplateProxy):
 

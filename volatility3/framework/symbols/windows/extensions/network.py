@@ -200,12 +200,14 @@ class _TCP_ENDPOINT(_TCP_LISTENER):
     def is_valid(self):
 
         if self.State not in self.State.choices.values():
-            vollog.debug("{} 0x{:x} invalid due to invalid tcp state {}".format(type(self), self.vol.offset, self.State))
+            vollog.debug("{} 0x{:x} invalid due to invalid tcp state {}".format(type(self), self.vol.offset,
+                                                                                self.State))
             return False
 
         try:
             if self.get_address_family() not in (AF_INET, AF_INET6):
-                vollog.debug("{} 0x{:x} invalid due to invalid address_family {}".format(type(self), self.vol.offset, self.get_address_family()))
+                vollog.debug("{} 0x{:x} invalid due to invalid address_family {}".format(
+                    type(self), self.vol.offset, self.get_address_family()))
                 return False
 
             if not self.get_local_address() and (not self.get_owner() or self.get_owner().UniqueProcessId == 0

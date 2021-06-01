@@ -388,7 +388,7 @@ class FILE_OBJECT(objects.StructType, pool.ExecutiveObject):
             self.FileName.Buffer)
 
     def file_name_with_device(self) -> Union[str, interfaces.renderers.BaseAbsentValue]:
-        name = renderers.UnreadableValue()  # type: Union[str, interfaces.renderers.BaseAbsentValue]
+        name: Union[str, interfaces.renderers.BaseAbsentValue] = renderers.UnreadableValue()
 
         # this pointer needs to be checked against native_layer_name because the object may
         # be instantiated from a primary (virtual) layer or a memory (physical) layer.
@@ -526,7 +526,7 @@ class EPROCESS(generic.GenericIntelProcess, pool.ExecutiveObject):
             raise TypeError("Parent layer is not a translation layer, unable to construct process layer")
 
         # Presumably for 64-bit systems, the DTB is defined as an array, rather than an unsigned long long
-        dtb = 0  # type: int
+        dtb: int = 0
         if isinstance(self.Pcb.DirectoryTableBase, objects.Array):
             dtb = self.Pcb.DirectoryTableBase.cast("unsigned long long")
         else:

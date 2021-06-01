@@ -43,12 +43,13 @@ class RegExScanner(layers.ScannerInterface):
             if offset < self.chunk_size:
                 yield offset + data_offset
 
+
 class MultiStringScanner(layers.ScannerInterface):
     thread_safe = True
 
     def __init__(self, patterns: List[bytes]) -> None:
         super().__init__()
-        self._pattern_trie = {}  # type: Optional[Dict[int, Optional[Dict]]]
+        self._pattern_trie: Optional[Dict[int, Optional[Dict]]] = {}
         for pattern in patterns:
             self._process_pattern(pattern)
         self._regex = self._process_trie(self._pattern_trie)

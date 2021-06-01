@@ -41,7 +41,7 @@ class PsList(interfaces.plugins.PluginInterface):
 
     @classmethod
     def get_list_tasks(
-            cls, method: str
+        cls, method: str
     ) -> Callable[[interfaces.context.ContextInterface, str, str, Callable[[int], bool]],
                   Iterable[interfaces.objects.ObjectInterface]]:
         """Returns the list_tasks method based on the selector
@@ -124,7 +124,7 @@ class PsList(interfaces.plugins.PluginInterface):
 
         proc = kernel.object_from_symbol(symbol_name = "allproc").lh_first
 
-        seen = {}  # type: Dict[int, int]
+        seen: Dict[int, int] = {}
         while proc is not None and proc.vol.offset != 0:
             if proc.vol.offset in seen:
                 vollog.log(logging.INFO, "Recursive process list detected (a result of non-atomic acquisition).")
@@ -165,7 +165,7 @@ class PsList(interfaces.plugins.PluginInterface):
 
         queue_entry = kernel.object_from_symbol(symbol_name = "tasks")
 
-        seen = {}  # type: Dict[int, int]
+        seen: Dict[int, int] = {}
         for task in queue_entry.walk_list(queue_entry, "tasks", "task"):
             if task.vol.offset in seen:
                 vollog.log(logging.INFO, "Recursive process list detected (a result of non-atomic acquisition).")

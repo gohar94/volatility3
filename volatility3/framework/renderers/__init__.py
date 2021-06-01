@@ -56,7 +56,7 @@ class TreeNode(interfaces.renderers.TreeNode):
         self._parent = parent
         self._path = path
         self._validate_values(values)
-        self._values = treegrid.RowStructure(*values)  # type: ignore
+        self._values = treegrid.RowStructure(*values)
 
     def __repr__(self) -> str:
         return "<TreeNode [{}] - {}>".format(self.path, self._values)
@@ -158,8 +158,8 @@ class TreeGrid(interfaces.renderers.TreeGrid):
         """
         self._populated = False
         self._row_count = 0
-        self._children = []  # type: List[interfaces.renderers.TreeNode]
-        converted_columns = []  # type: List[interfaces.renderers.Column]
+        self._children: List[interfaces.renderers.TreeNode] = []
+        converted_columns: List[interfaces.renderers.Column] = []
         if len(columns) < 1:
             raise ValueError("Columns must be a list containing at least one column")
         for (name, column_type) in columns:
@@ -207,7 +207,7 @@ class TreeGrid(interfaces.renderers.TreeGrid):
 
         if not self.populated:
             try:
-                prev_nodes = []  # type: List[interfaces.renderers.TreeNode]
+                prev_nodes: List[interfaces.renderers.TreeNode] = []
                 for (level, item) in self._generator:
                     parent_index = min(len(prev_nodes), level)
                     parent = prev_nodes[parent_index - 1] if parent_index > 0 else None

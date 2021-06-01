@@ -308,8 +308,8 @@ class PDBUtility(interfaces.configuration.VersionableInterface):
                              end = module_offset + module_size))
 
         if not guids:
-            raise exceptions.VolatilityException(
-                "Did not find GUID of {} in module @ 0x{:x}!".format(pdb_name, module_offset))
+            raise exceptions.VolatilityException("Did not find GUID of {} in module @ 0x{:x}!".format(
+                pdb_name, module_offset))
 
         guid = guids[0]
 
