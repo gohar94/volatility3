@@ -51,6 +51,18 @@ class ContextInterface(metaclass = ABCMeta):
         """Returns the memory object for the context."""
         raise NotImplementedError("ModuleContainer has not been implemented.")
 
+    def add_module(self, module: 'interfaces.context.ModuleInterface'):
+        """Adds a named module to the context.
+
+        Args:
+            module: The module to be added to the module object collection
+
+        Raises:
+            volatility3.framework.exceptions.VolatilityException: if the module is already present, or has
+                unmet dependencies
+        """
+        self.modules.add_module(module)
+
     @property
     @abstractmethod
     def layers(self) -> 'interfaces.layers.LayerContainer':
