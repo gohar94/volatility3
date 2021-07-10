@@ -56,7 +56,7 @@ class POOL_HEADER(objects.StructType):
                                               layer_name = self.vol.layer_name,
                                               offset = self.vol.offset + pool_header_size,
                                               native_layer_name = native_layer_name)
-            return mem_object
+            yield mem_object
 
         # otherwise we have an executive object in the pool
         else:
@@ -142,7 +142,7 @@ class POOL_HEADER(objects.StructType):
                                                           native_layer_name = native_layer_name)
 
                         if mem_object.is_valid():
-                            return mem_object
+                            yield mem_object
 
                     except (TypeError, exceptions.InvalidAddressException):
                         pass
@@ -161,8 +161,7 @@ class POOL_HEADER(objects.StructType):
                     if mem_object.is_valid():
                         return mem_object
                 except (TypeError, exceptions.InvalidAddressException):
-                    return None
-        return None
+                    pass
 
     @classmethod
     @functools.lru_cache()

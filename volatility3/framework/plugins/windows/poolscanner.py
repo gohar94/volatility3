@@ -291,26 +291,27 @@ class PoolScanner(plugins.PluginInterface):
 
         for constraint, header in cls.pool_scan(context, scan_layer, symbol_table, constraints, alignment = alignment):
 
-            mem_object = header.get_object(type_name = constraint.type_name,
+            mem_objects = header.get_object(type_name = constraint.type_name,
                                            use_top_down = is_windows_8_or_later,
                                            executive = constraint.object_type is not None,
                                            native_layer_name = 'primary',
                                            kernel_symbol_table = symbol_table)
 
-            if mem_object is None:
-                vollog.log(constants.LOGLEVEL_VVV, "Cannot create an instance of {}".format(constraint.type_name))
-                continue
-
-            if constraint.object_type is not None and not constraint.skip_type_test:
-                try:
-                    if mem_object.get_object_header().get_object_type(type_map, cookie) != constraint.object_type:
-                        continue
-                except exceptions.InvalidAddressException:
-                    vollog.log(constants.LOGLEVEL_VVV,
-                               "Cannot test instance type check for {}".format(constraint.type_name))
+            for mem_object in mem_objects:
+                if mem_object is None:
+                    vollog.log(constants.LOGLEVEL_VVV, "Cannot create an instance of {}".format(constraint.type_name))
                     continue
 
-            yield constraint, mem_object, header
+                if constraint.object_type is not None and not constraint.skip_type_test:
+                    try:
+                        if mem_object.get_object_header().get_object_type(type_map, cookie) != constraint.object_type:
+                            continue
+                    except exceptions.InvalidAddressException:
+                        vollog.log(constants.LOGLEVEL_VVV,
+                                   "Cannot test instance type check for {}".format(constraint.type_name))
+                        continue
+
+                yield constraint, mem_object, header
 
     @classmethod
     def pool_scan(cls,
